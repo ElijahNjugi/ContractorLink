@@ -1,0 +1,45 @@
+{
+  "model_version": "v1",
+  "training_rows": 12000,
+  "breach_rate": 0.1275,
+  "roc_auc": 0.8402922136699317,
+  "classification_report": {
+    "0": {
+      "precision": 0.9731219848380427,
+      "recall": 0.6743075453677173,
+      "f1-score": 0.7966149506346968,
+      "support": 2094.0
+    },
+    "1": {
+      "precision": 0.2813487881981033,
+      "recall": 0.8725490196078431,
+      "f1-score": 0.4254980079681275,
+      "support": 306.0
+    },
+    "accuracy": 0.6995833333333333,
+    "macro avg": {
+      "precision": 0.627235386518073,
+      "recall": 0.7734282824877803,
+      "f1-score": 0.6110564793014122,
+      "support": 2400.0
+    },
+    "weighted avg": {
+      "precision": 0.8849209022664504,
+      "recall": 0.6995833333333333,
+      "f1-score": 0.7492975404447092,
+      "support": 2400.0
+    }
+  },
+  "features": [
+    "priority",
+    "category",
+    "assignment_group",
+    "location",
+    "contact_type",
+    "impact",
+    "urgency",
+    "reassignment_count",
+    "reopen_count",
+    "sla_target_minutes"
+  ]
+}

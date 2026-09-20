@@ -1,0 +1,38 @@
+CONTRACTORLINK - START HERE
+
+1. Extract the whole ZIP into a normal folder. Do not run it inside the ZIP.
+2. Double-click "Launch ContractorLink.cmd".
+3. On first launch, allow several minutes with an internet connection.
+   The launcher downloads missing tools, prepares a private local database,
+   installs dependencies, builds the app and opens your browser automatically.
+4. Open ".runtime\First login.txt" for your generated administrator login.
+   Change the initial password when prompted.
+5. Keep the launcher window open while using the app.
+6. When finished, double-click "Stop ContractorLink.cmd", or press Ctrl+C
+   in the launcher window. Your local data is kept for the next launch.
+
+Requirements: 64-bit Windows 10 or Windows 11, an internet connection on
+first setup, and a few GB of free disk space. No paid account is required.
+Node.js, Python and PostgreSQL do not need to be installed beforehand.
+
+The app normally opens at http://127.0.0.1:5173. If that port is occupied,
+the launcher selects another port and prints the correct address. Use the
+shortcut in .runtime for that address. "Open ContractorLink.url" at the
+top level opens the default address only after the launcher has started.
+
+This is a local installation. The address is not a publicly hosted website.
+Each recipient gets a separate empty database with an administrator account.
+No private company data or uploaded documents are included in this ZIP.
+Email delivery is disabled in the launcher; local screens and in-app
+notifications work, but email/password-reset delivery needs SMTP configuration.
+The SLA drafting assistant uses the free guided mode. No AI API key is needed.
+
+To share a clean copy, send ContractorLink-Windows.zip from the GitHub release
+or run "npm run package" in the source project. Do not re-zip a used folder:
+.runtime contains passwords, local database records and uploaded files.
+
+Troubleshooting: keep the error text visible, check internet access, and retry
+the launcher. Logs are in .runtime\logs. Do not delete .runtime to fix an
+error unless you deliberately want to discard that installation's data.
+If a download is blocked by your institution, ask its IT support for access;
+do not disable Windows security protections.

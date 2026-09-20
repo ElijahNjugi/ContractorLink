@@ -1,0 +1,13 @@
+{
+  "name": "contractorlink-launcher",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portable local launcher for ContractorLink",
+  "scripts": {
+    "start": "node scripts/launch.mjs",
+    "test": "node --test scripts/*.test.mjs",
+    "package": "node scripts/package.mjs"
+  },
+  "dependencies": { "embedded-postgres": "18.4.0-beta.17" },
+  "engines": { "node": ">=22 <25" }
+}
