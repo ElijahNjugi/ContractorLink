@@ -2,6 +2,7 @@ node_modules/
 .venv/
 .runtime/
 .distribution/
+snapshot/
 dist/
 __pycache__/
 *.pyc

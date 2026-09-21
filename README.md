@@ -4,6 +4,18 @@ A final-year web application for coordinating service work between companies and
 
 ## Run the project on Windows
 
+## Research dataset in Google Colab
+
+[Open the dataset and model notebook in Google Colab](https://colab.research.google.com/github/ElijahNjugi/ContractorLink/blob/main/notebooks/ContractorLink_Dataset_and_Model.ipynb). Choose **Runtime → Run all** with a free CPU runtime. It downloads the published research CSV, verifies its checksum, explores the data, reproduces the model and exports the results. Use **File → Save a copy in Drive** to keep your own copy. The notebook explains the simulated labels and evaluation limitations.
+
+## Private snapshot edition
+
+Elijah can provide a separate **ContractorLink-With-Records.zip** directly to reviewers. Extract it and double-click **Launch ContractorLink.cmd**. On its first launch, this edition imports the supplied database records and uploaded files. Use the existing application email/password provided separately by Elijah; passwords are not reset. Later launches preserve your changes. Each recipient has an independent copy, without synchronization.
+
+The snapshot is private and excluded from GitHub and public releases. It includes account password hashes and project documents, so share it only with intended recipients. Database server credentials, email/API keys and password-reset tokens are excluded. Existing local installations are never overwritten by a snapshot.
+
+## Public source edition
+
 Download **ContractorLink-Windows.zip** from the repository's **Releases** page, extract the entire folder, and double-click **Launch ContractorLink.cmd**.
 
 The first launch downloads missing dependencies, creates an isolated PostgreSQL database, builds the frontend and opens the website automatically. Later launches reuse the installed dependencies and saved data. No hosting subscription, Docker installation or paid AI account is required.

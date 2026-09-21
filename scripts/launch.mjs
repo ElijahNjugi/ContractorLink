@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { spawn, spawnSync } from 'node:child_process';
 import { availablePort, fingerprint, migrationBody, writePrivateJson } from './launcher-utils.mjs';
+import { importSnapshot } from './snapshot.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const runtime = path.join(root, '.runtime');
@@ -97,6 +98,7 @@ async function initializeData(config, port) {
         await client.query('COMMIT');
       } catch (error) { await client.query('ROLLBACK'); throw error; }
     }
+    if (await importSnapshot(client, root, runtime)) return;
     await client.query('BEGIN');
     for (const [code, name] of [['SUPER_ADMIN','Super Admin'],['ORG_ADMIN','Organization Admin'],['ORG_STAFF','Organization Staff'],['DIRECTOR','Director'],['APPLICANT_REP','Applicant Representative']]) {
       await client.query('INSERT INTO roles(code,name) VALUES($1,$2) ON CONFLICT(code) DO NOTHING', [code,name]);

@@ -22,6 +22,7 @@ function copy(relative) {
   if(fs.statSync(source).isDirectory()) {fs.mkdirSync(target,{recursive:true});for(const item of fs.readdirSync(source))copy(path.join(relative,item));}
   else {fs.mkdirSync(path.dirname(target),{recursive:true});fs.copyFileSync(source,target);files.push(relative.replaceAll('\\','/'));}
 }
+entries.push('notebooks');
 for(const entry of entries)copy(entry);
 for(const name of files) {
   if(/(^|\/)(\.env|node_modules|uploads|\.runtime)(\/|$)/.test(name))throw new Error(`Private file entered export: ${name}`);
