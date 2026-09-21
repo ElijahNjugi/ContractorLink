@@ -740,6 +740,13 @@ router.patch("/:id", requireRole("SUPER_ADMIN", "ORG_ADMIN"), async (req, res) =
     const resolutionNote =
       typeof req.body?.resolution_note === "string" ? req.body.resolution_note.trim() : null;
 
+    if (status === "FAILED") {
+      const failed = await require("../services/failTicket").failTicket(pool, ticket.id, req.user, resolutionNote);
+      const users = await getActiveUsersForOrganizations([ticket.requesting_organization_id, ticket.assigned_organization_id]);
+      await createNotificationsForUsers(users.map(user => user.id), {title:"Ticket Failed", message:`${ticket.ticket_number}: work was not completed.`, type:"WARNING", entityType:"ticket", entityId:ticket.id, link:`/tickets/${ticket.id}`}).catch(error => console.error("FAILURE NOTIFICATION ERROR:", error.message));
+      return res.json(failed);
+    }
+    if (ticket.status === "FAILED") return res.status(409).json({error:"Failed tickets are closed and cannot be reopened."});
     if (status && !["OPEN", "IN_PROGRESS", "ON_HOLD", "COMPLETED", "CANCELLED"].includes(status)) {
       return res.status(400).json({
         error: "status must be OPEN, IN_PROGRESS, ON_HOLD, COMPLETED, or CANCELLED",
@@ -772,7 +779,7 @@ router.patch("/:id", requireRole("SUPER_ADMIN", "ORG_ADMIN"), async (req, res) =
         completed_at = CASE WHEN $1::varchar = 'COMPLETED' THEN COALESCE(completed_at, now()) ELSE completed_at END,
         updated_at = now()
       WHERE id = $6
-        AND NOT ($1::varchar IN ('COMPLETED', 'CANCELLED') AND status = $1::varchar)
+        AND status <> 'FAILED' AND NOT ($1::varchar IN ('COMPLETED', 'CANCELLED') AND status = $1::varchar)
       RETURNING *
     `;
 
@@ -879,7 +886,7 @@ router.patch("/:id", requireRole("SUPER_ADMIN", "ORG_ADMIN"), async (req, res) =
     return res.json(rows[0]);
   } catch (error) {
     console.error("UPDATE TICKET ERROR:", error);
-    return res.status(500).json({ error: "Failed to update ticket" });
+    return res.status(error.status || 500).json({ error: error.status ? error.message : "Failed to update ticket" });
   }
 });
 
@@ -945,7 +952,7 @@ router.post("/:id/reassign", requireRole("SUPER_ADMIN", "ORG_ADMIN"), async (req
       return res.status(403).json({ error: "Forbidden" });
     }
 
-    if (ticket.status === "COMPLETED" || ticket.status === "CANCELLED") {
+    if (["COMPLETED", "CANCELLED", "FAILED"].includes(ticket.status)) {
       await client.query("ROLLBACK");
       return res.status(400).json({
         error: "Completed or cancelled tickets cannot be reassigned",

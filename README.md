@@ -4,7 +4,7 @@
 
 ContractorLink is my final-year project on managing service work between companies and contractors. The main idea is to keep the agreement, assigned work and progress records in one place. A company and its contractor can agree on service terms, create tickets under the agreement and follow each ticket through to completion.
 
-The application covers organization registration and approval, partnerships, service level agreements (SLAs), ticket assignment, discussions, approved holds, notifications and reports. It also includes a Random Forest model that gives an advisory breach-risk score. I use this score to support ticket review; the SLA deadline and recorded progress remain the basis for tracking the work.
+The application covers organization registration and approval, partnerships, service level agreements (SLAs), ticket assignment, discussions, approved holds, notifications and reports. After an SLA breach, a client or contractor administrator can mark unfinished work as failed and record the reason. Failed tickets close separately from completed work. It also includes a Random Forest model that gives an advisory breach-risk score. I use this score to support ticket review; the SLA deadline and recorded progress remain the basis for tracking the work.
 
 ## How the project works
 
@@ -59,6 +59,8 @@ The model detects many of the labelled breaches but also produces many false ala
 The launcher uses [Node.js](https://nodejs.org/), [uv](https://docs.astral.sh/uv/) and [embedded-postgres](https://github.com/leinelissen/embedded-postgres). These components retain their own licences. The required runtimes are downloaded during setup rather than included in the source ZIP.
 
 ## Local setup and limitations
+
+When `backend/.env` contains database settings, the launcher uses that existing development database and the same account logins as `npm run dev`. Otherwise, it creates its own portable database and imports the supplied snapshot when present.
 
 The launcher runs the website on the local computer; it does not publish it online. It uses guided SLA drafting without a paid API key. In-app notifications are available, but email delivery is disabled. Emailed invitations and password-reset links need SMTP configuration in a development installation.
 

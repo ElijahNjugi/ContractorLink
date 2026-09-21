@@ -38,7 +38,7 @@ async function getThreadByTicketId(ticketId) {
 }
 
 function ticketChatHasExpired(ticket) {
-  if (["COMPLETED", "CANCELLED"].includes(String(ticket.status).toUpperCase())) return true;
+  if (["COMPLETED", "CANCELLED", "FAILED"].includes(String(ticket.status).toUpperCase())) return true;
   return ticket.expected_end_time && new Date(ticket.expected_end_time).getTime() <= Date.now();
 }
 

@@ -1747,3 +1747,6 @@ html, body, #root { height: 100%; overflow: hidden; }
 html:has(.landing-page), body:has(.landing-page) { height: auto; min-height: 100%; overflow-y: auto; overflow-x: hidden; }
 body:has(.landing-page) #root { height: auto; min-height: 100%; overflow: visible; }
 .landing-page { overflow-x: hidden; overflow-y: visible; }
+
+/* Failed work remains distinct from successfully completed tickets. */
+.status-failed { background: #fee2e2; color: #991b1b; }

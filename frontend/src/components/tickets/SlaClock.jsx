@@ -15,7 +15,7 @@ function getTiming(startTime, endTime, status, now) {
 export default function SlaClock({ startTime, endTime, status, compact = false }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const id = window.setInterval(() => setNow(Date.now()), 30000); return () => window.clearInterval(id); }, []);
-  if (["COMPLETED", "CANCELLED"].includes(String(status || "").toUpperCase())) return null;
+  if (["COMPLETED", "CANCELLED", "FAILED"].includes(String(status || "").toUpperCase())) return null;
   const timing = getTiming(startTime, endTime, status, now);
   return <div className={`sla-clock ${timing.tone} ${compact ? "compact" : ""}`}>
     <div className="sla-clock-head"><span className="sla-clock-dot" /><strong>{timing.label}</strong><span>{timing.detail}</span></div>

@@ -12,7 +12,7 @@ export default function TicketsPage() {
   const [filter, setFilter] = useState("ACTIVE");
   const [error, setError] = useState("");
   useEffect(() => { fetchTickets().then(setTickets).catch((err) => setError(err.response?.data?.error || "Unable to load tickets.")); }, []);
-  const visible = tickets.filter((ticket) => filter === "ALL" || (filter === "PAST" ? ["COMPLETED", "CANCELLED"].includes(ticket.status) : !["COMPLETED", "CANCELLED"].includes(ticket.status)));
+  const visible = tickets.filter((ticket) => filter === "ALL" || (filter === "PAST" ? ["COMPLETED", "CANCELLED", "FAILED"].includes(ticket.status) : !["COMPLETED", "CANCELLED", "FAILED"].includes(ticket.status)));
   return <section className="stack-lg">
     <PageHeader eyebrow="Ticket operations" title="Tickets" description="Create work requests from an active SLA and monitor the agreed response and resolution time." actions={<Link className="button" to="/tickets/new">+ Create ticket</Link>} />
     <div className="panel filter-row"><strong>Show</strong>{["ACTIVE", "PAST", "ALL"].map((value) => <button key={value} type="button" className={`button button-small ${filter === value ? "" : "button-secondary"}`} onClick={() => setFilter(value)}>{value === "ACTIVE" ? "Active tickets" : value === "PAST" ? "Past tickets" : "All tickets"}</button>)}</div>

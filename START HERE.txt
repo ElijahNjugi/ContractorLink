@@ -5,7 +5,8 @@ CONTRACTORLINK - START HERE
 3. On first launch, allow several minutes with an internet connection.
    The launcher downloads missing tools, prepares a private local database,
    installs dependencies, builds the app and opens your browser automatically.
-4. For the public download, open ".runtime\First login.txt" for your
+4. On the development PC, a configured backend/.env uses the same database
+   and logins as npm run dev. For the public download, open ".runtime\First login.txt" for your
    generated administrator login and change the password when prompted.
    For the ZIP with existing records, use the login details I provide.
 5. Keep the launcher window open while using the app.

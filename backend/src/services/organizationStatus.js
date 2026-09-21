@@ -115,7 +115,7 @@ async function disableOrganizationCascade(organizationId, executor = pool) {
     `
     UPDATE tickets
     SET status = CASE
-        WHEN status IN ('COMPLETED', 'CANCELLED') THEN status
+        WHEN status IN ('COMPLETED', 'CANCELLED', 'FAILED') THEN status
         ELSE 'CANCELLED'
       END,
       updated_at = now()
@@ -150,7 +150,7 @@ async function disableOrganizationCascade(organizationId, executor = pool) {
     FROM tickets t
     WHERE st.ticket_id = t.id
       AND (t.requesting_organization_id = $1 OR t.assigned_organization_id = $1)
-      AND st.sla_status <> 'COMPLETED'
+      AND st.sla_status NOT IN ('COMPLETED', 'FAILED')
     `,
     [organizationId]
   );

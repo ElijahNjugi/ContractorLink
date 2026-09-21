@@ -150,6 +150,10 @@ async function main() {
     });
     fs.writeFileSync(buildStamp,buildHash);
   }
+  const localRequire = createRequire(path.join(root, 'backend/package.json'));
+  const envFile = path.join(root, 'backend/.env');
+  const development = fs.existsSync(envFile) ? localRequire('dotenv').parse(fs.readFileSync(envFile)) : null;
+  if (development && !['DB_HOST','DB_NAME','DB_USER','DB_PASSWORD'].every(key => development[key])) throw new Error('backend/.env is missing database settings. Complete them before launching.');
   const configFile = path.join(runtime,'config.json');
   let config=readJson(configFile);
   if (!config) {
@@ -159,6 +163,7 @@ async function main() {
   const databasePort=await availablePort(55432);
   const port=await availablePort(5173);
   const url=`http://127.0.0.1:${port}`;
+  if (!development) {
   const {default:EmbeddedPostgres}=await import('embedded-postgres');
   const {pg_ctl}=await import('@embedded-postgres/windows-x64');
   const dbLog=fs.createWriteStream(path.join(runtime,'logs/database.log'),{flags:'a'});
@@ -178,10 +183,18 @@ async function main() {
     dbStarted=false;
   };
   await initializeData(config,databasePort);
+  } else {
+    console.log('Using your existing development database and account logins.');
+    const {Client} = localRequire('pg');
+    const client = new Client({host:development.DB_HOST, port:Number(development.DB_PORT||5432), database:development.DB_NAME, user:development.DB_USER, password:development.DB_PASSWORD});
+    await client.connect();
+    try { await client.query(fs.readFileSync(path.join(root,'database/2026-09-21_failed_ticket_outcome.sql'),'utf8')); }
+    finally { await client.end(); }
+  }
   const log=fs.openSync(path.join(runtime,'logs/backend.log'),'a');
   backend=spawn(process.execPath,[path.join(root,'backend/src/server.js')],{cwd:path.join(root,'backend'),windowsHide:true,stdio:['ignore',log,log,'ipc'],env:{...process.env,
-    PORT:String(port),HOST:'127.0.0.1',SERVE_FRONTEND:'true',DB_HOST:'127.0.0.1',DB_PORT:String(databasePort),DB_NAME:'contractorlink',DB_USER:'contractorlink',DB_PASSWORD:config.databasePassword,
-    JWT_SECRET:config.jwtSecret,APP_BASE_URL:url,UPLOAD_ROOT:path.join(runtime,'uploads'),PYTHON_EXECUTABLE:process.env.PYTHON_EXECUTABLE||path.join(runtime,'venv/Scripts/python.exe'),
+    PORT:String(port),HOST:'127.0.0.1',SERVE_FRONTEND:'true',DB_HOST:development?.DB_HOST||'127.0.0.1',DB_PORT:development?.DB_PORT||String(development?5432:databasePort),DB_NAME:development?.DB_NAME||'contractorlink',DB_USER:development?.DB_USER||'contractorlink',DB_PASSWORD:development?.DB_PASSWORD||config.databasePassword,
+    JWT_SECRET:config.jwtSecret,APP_BASE_URL:url,UPLOAD_ROOT:development?(development.UPLOAD_ROOT||path.join(root,'backend/uploads')):path.join(runtime,'uploads'),PYTHON_EXECUTABLE:process.env.PYTHON_EXECUTABLE||path.join(runtime,'venv/Scripts/python.exe'),
     MAIL_HOST:'',MAIL_USER:'',MAIL_PASS:'',MAIL_FROM:'',AI_PROVIDER:'guided',OPENAI_API_KEY:'',
   }});
   backend.once('exit',code=>{backendExited=true;if (!stopping) {console.error(`Backend stopped (${code}). See .runtime/logs/backend.log`);stop(1);}});
@@ -206,7 +219,7 @@ async function main() {
   }
   if(!ready) throw new Error('Website did not become ready. See .runtime/logs/backend.log.');
   fs.writeFileSync(path.join(runtime,'Open ContractorLink.url'),`[InternetShortcut]\r\nURL=${url}\r\n`);
-  console.log(`\nContractorLink is ready: ${url}\nFirst login details: .runtime/First login.txt\nKeep this window open. Use Stop ContractorLink.cmd or press Ctrl+C when finished.\n`);
+  console.log(`\nContractorLink is ready: ${url}\nLogin: ${development?'Use your existing development account.':'See .runtime/First login.txt'}\nKeep this window open. Use Stop ContractorLink.cmd or press Ctrl+C when finished.\n`);
   browser(url);
 }
 main().catch(async error=>{console.error(`\nLaunch failed: ${error.message}`);await stop(1);});

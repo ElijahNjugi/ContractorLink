@@ -1,5 +1,7 @@
 param([switch]$Stop, [switch]$NoBrowser, [switch]$UsePortableNode)
 $ErrorActionPreference = 'Stop'
+# Use this PowerShell version's modules when launched from another shell.
+$env:PSModulePath = (Join-Path $PSHOME 'Modules') + [IO.Path]::PathSeparator + $env:PSModulePath
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $root
 $runtime = Join-Path $root '.runtime'
@@ -45,7 +47,7 @@ try {
     try { $setupLock = [IO.File]::Open((Join-Path $runtime 'setup.lock'), 'OpenOrCreate', 'ReadWrite', 'None') }
     catch { throw 'Another ContractorLink launcher is setting up or running. Use its existing window and wait for setup to finish.' }
     Write-Host 'ContractorLink - local project launcher' -ForegroundColor Cyan
-    Write-Host 'First setup needs internet. Your existing project database is not used.'
+    Write-Host 'First setup needs internet. A configured backend/.env uses your existing project database.'
     if (-not [Environment]::Is64BitOperatingSystem) { throw 'This launcher requires 64-bit Windows 10 or Windows 11.' }
     if (-not (Test-Path -LiteralPath $node)) {
         $base = 'https://nodejs.org/dist/latest-v22.x'
