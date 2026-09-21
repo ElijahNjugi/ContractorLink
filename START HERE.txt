@@ -5,8 +5,9 @@ CONTRACTORLINK - START HERE
 3. On first launch, allow several minutes with an internet connection.
    The launcher downloads missing tools, prepares a private local database,
    installs dependencies, builds the app and opens your browser automatically.
-4. Open ".runtime\First login.txt" for your generated administrator login.
-   Change the initial password when prompted.
+4. For the public download, open ".runtime\First login.txt" for your
+   generated administrator login and change the password when prompted.
+   For the ZIP with existing records, use the login details I provide.
 5. Keep the launcher window open while using the app.
 6. When finished, double-click "Stop ContractorLink.cmd", or press Ctrl+C
    in the launcher window. Your local data is kept for the next launch.
@@ -21,8 +22,9 @@ shortcut in .runtime for that address. "Open ContractorLink.url" at the
 top level opens the default address only after the launcher has started.
 
 This is a local installation. The address is not a publicly hosted website.
-Each recipient gets a separate empty database with an administrator account.
-No private company data or uploaded documents are included in this ZIP.
+The public download starts with an empty database and administrator account.
+The private ZIP with records imports the supplied accounts and documents on
+first launch. Later launches keep your changes. Copies do not synchronize.
 Email delivery is disabled in the launcher; local screens and in-app
 notifications work, but email/password-reset delivery needs SMTP configuration.
 The SLA drafting assistant uses the free guided mode. No AI API key is needed.

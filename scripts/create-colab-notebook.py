@@ -12,18 +12,20 @@ def cell(kind, text):
     cells.append(item)
 
 cell("markdown", """
-# ContractorLink: dataset exploration and breach-risk modelling
-**Elijah Njugi — final-year project**
+# ContractorLink: dataset preparation and breach-risk prediction
+**Elijah Njugi | Final-year project**
 
-This notebook loads the project's published 12,000-row research dataset, checks its composition, and trains the same Random Forest configuration used by ContractorLink. Select **Runtime → Run all** in Google Colab. A free CPU runtime is sufficient; no paid GPU or application credentials are needed.
+In this notebook, I examine the dataset used for the breach-risk prediction feature in ContractorLink. The aim is to identify tickets that may need attention before they miss their service deadline. I use a Random Forest classifier and compare its predictions with the recorded labels in a test set.
 
-The research dataset is separate from the application database. It contains anonymized incident categories and simulated records, not ContractorLink account passwords, tickets or uploaded documents. Colab runtime files are temporary: download the exported results before ending the session.
+The notebook covers the dataset, preparation steps, model training and results. To run it in Colab, select **Runtime → Run all**. A free CPU runtime is enough. The research CSV is separate from the application's database and does not contain user passwords or uploaded project documents.
 """)
 cell("code", """
+# Install the libraries needed to prepare the data, train the model and plot the results.
 %pip -q install numpy==2.5.2 pandas==3.0.5 scikit-learn==1.9.0 joblib==1.5.3 matplotlib
 """)
 digest = hashlib.sha256((root / "ml/data/hybrid_breach_training.csv").read_bytes()).hexdigest()
 cell("code", f"""
+# Load the published dataset, check that the file is unchanged and preview its records.
 from pathlib import Path
 from urllib.request import urlopen
 import hashlib, json
@@ -42,14 +44,15 @@ print(f'Loaded {{len(data):,}} rows and {{len(data.columns)}} columns')
 display(data.head(10))
 """)
 cell("markdown", """
-## Provenance and interpretation
-The external portion contains 6,000 sampled initial incident snapshots derived from the [UCI Incident Management Process Enriched Event Log](https://doi.org/10.24432/C57S4H). A further 6,000 records were simulated for ContractorLink scenarios with seed 42. The preparation procedure is available in `ml/prepare_hybrid_dataset.py` in the repository.
+## Where the data comes from
+I use a dataset of 12,000 records: 6,000 initial incident snapshots drawn from the [UCI Incident Management Process Enriched Event Log](https://doi.org/10.24432/C57S4H) and 6,000 simulated records representing ContractorLink service scenarios. The preparation code is in `ml/prepare_hybrid_dataset.py`. A fixed random seed of 42 makes the sampling and simulation repeatable.
 
-**All 1,530 positive breach labels in this prepared dataset come from simulated records.** External labels were taken from the initial snapshot's `made_sla` field, not the final incident outcome. The SLA target duration was assigned from priority, rather than measured from a real contractual deadline. These choices limit the validity of the dataset for predicting real operational breaches.
+The `breached` column is the target: 1 represents a breach and 0 represents no breach. In this prepared dataset, all 1,530 breach labels come from the simulated records. The external labels use `made_sla` from the first incident snapshot, which may differ from the final outcome. The SLA target is also assigned from priority rather than taken from an actual agreement.
 
-`record_source` is retained for auditing and excluded from model inputs. Differences in the other fields can still identify the source indirectly. A random holdout from this mixture is an internal experiment, not evidence of real-world or cross-organization performance. No interviews, organization pilot or formal user study is claimed here.
+These details affect how I interpret the results. This experiment tests the model on the prepared mixture; it does not establish how well it will predict breaches in a real organization. I keep `record_source` for checking the data but leave it out of the model inputs. Other category differences may still allow the model to distinguish the two sources.
 """)
 cell("code", """
+# Check the labels, missing values and repeated rows, then compare the two data sources.
 assert len(data) == 12000
 assert set(data['breached'].unique()) == {0, 1}
 display(pd.crosstab(data.record_source, data.breached, margins=True))
@@ -60,18 +63,21 @@ pd.crosstab(data.record_source, data.breached).plot.bar(stacked=True, rot=0, fig
 plt.ylabel('Records'); plt.title('Labels by dataset source'); plt.tight_layout(); plt.show()
 """)
 cell("markdown", """
-## Train and evaluate
-Seven categorical and three numeric features enter the pipeline. Missing categorical values use the most frequent value; missing numeric values use the median. One-hot encoding ignores unseen categories. Preprocessing is fitted on the training split only.
+## How I train the model
+I use seven categorical features and three numeric features. Missing categorical values are replaced with the most frequent value, while missing numeric values are replaced with the median. One-hot encoding converts the categories into model inputs and allows the pipeline to handle unfamiliar categories. These preparation steps are fitted using only the training data.
 
-The stratified 80/20 split uses seed 42. The forest has 400 trees, a minimum leaf size of 3, and balanced class weights. The evaluation reports a majority-class baseline alongside precision, recall, F1, ROC-AUC and the confusion matrix. Accuracy alone is misleading because most labels are negative.
+I split the records into 80% for training and 20% for testing, keeping the breach proportion similar in both sets. The Random Forest uses 400 trees, a minimum of three samples per leaf and balanced class weights. I keep the random seed at 42 so the experiment can be repeated.
+
+For evaluation, I look at precision, recall, F1 and ROC-AUC alongside the confusion matrix. I also compare accuracy with a simple baseline that predicts no breach for every record. This helps explain why accuracy alone is not enough for this dataset.
 """)
 training = (root / 'ml/train_breach_model.py').read_text(encoding='utf-8')
 imports = training[training.index('import joblib'):training.index('ROOT =')]
 features = training[training.index('FEATURES ='):training.index('\n\nif __name__')]
 body = training.split('if __name__ == "__main__":\n', 1)[1]
 body = '\n'.join(line[4:] if line.startswith('    ') else line for line in body.splitlines())
-cell('code', imports + '\nMODELS = Path("results"); MODELS.mkdir(exist_ok=True)\n' + features + '\n' + body)
+cell('code', '# Prepare the features, split the records, train the Random Forest and save the model.\n' + imports + '\nMODELS = Path("results"); MODELS.mkdir(exist_ok=True)\n' + features + '\n' + body)
 cell('code', """
+# Evaluate the test predictions and compare them with the no-breach baseline.
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score
 predictions = model.predict(x_test)
 print(classification_report(y_test, predictions, digits=4, zero_division=0))
@@ -82,18 +88,21 @@ plt.title('Held-out evaluation (2,400 records)'); plt.tight_layout(); plt.show()
 audit = pd.DataFrame({'source': data.loc[x_test.index, 'record_source'], 'actual': y_test, 'predicted': predictions})
 display(audit.groupby('source').agg(rows=('actual', 'size'), actual_breaches=('actual', 'sum'), predicted_breaches=('predicted', 'sum')))
 """)
-cell('markdown', """
-## What the results mean
-The saved project experiment reported approximately 0.8403 ROC-AUC, 0.6996 accuracy, 0.2813 breach precision and 0.8725 breach recall. Its confusion matrix was `[[1412, 682], [39, 267]]`. The always-negative baseline has 87.25% accuracy but detects no breaches. The model's high recall comes with many false alarms; its score is advisory, not proof that a ticket will miss its SLA.
+cell("markdown", """
+## Discussion of the results
+The project experiment produced a ROC-AUC of about 0.8403 and an accuracy of 69.96%. Breach precision was 28.13%, while breach recall was 87.25%. The confusion matrix was `[[1412, 682], [39, 267]]`: the model identified 267 of the 306 breach cases but also flagged 682 non-breach cases.
 
-The prepared CSV also contains 6,227 duplicate rows across its retained columns. Different incidents may share those same values; original incident identifiers were not retained, so independence cannot be established from this CSV. Matching feature profiles can appear in both random splits, adding another limitation to interpretation.
+This means the model catches many of the labelled breaches, but it raises many false alarms. The baseline reaches 87.25% accuracy simply by predicting no breach, yet it misses every breach. I therefore treat the model score as a prompt to review a ticket, rather than a definite prediction that the ticket will miss its deadline.
 
-Before operational validation, rebuild the external labels from final outcomes, retain identifiers for grouped splitting, verify the deadline mapping, align training categories with live application fields, and evaluate on independent real ContractorLink outcomes. Repeated incident snapshots must not cross training/test boundaries in future experiments. The current notebook reproduces the disclosed experiment without silently replacing its dataset or claiming improved results.
+There are also 6,227 duplicate rows across the columns retained in the CSV. Separate incidents can have the same values, but the original incident identifiers are not included, so I cannot check their independence from this file alone. Similar records can appear in both splits. Together with the simulated breach labels, this limits what the test results show.
 
-## Save your work
-Use **File → Save a copy in Drive** to keep an editable copy in your Google account. The following optional cell downloads a ZIP containing the research dataset, trained model and metrics. Only load joblib model files from trusted sources.
+For further evaluation, I would use final incident outcomes, retain incident identifiers for grouped splitting, check the SLA target mapping and align the training categories with the live application fields. Testing against independent ContractorLink outcomes would then give a stronger basis for judging the model's usefulness. The results here are from the dataset experiment, not an organization pilot.
+
+## Saving the notebook and results
+Select **File → Save a copy in Drive** to keep an editable notebook. The last cell creates a ZIP containing the dataset, trained model and metrics. Download it before ending the Colab session, since runtime files are temporary. Model files should only be loaded from a trusted source.
 """)
 cell('code', """
+# Package the dataset, model and evaluation results for download.
 import zipfile
 with zipfile.ZipFile('ContractorLink_research_results.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
     archive.write(DATA)

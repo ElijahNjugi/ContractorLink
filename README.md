@@ -1,64 +1,75 @@
 # ContractorLink
 
-A final-year web application for coordinating service work between companies and contractors. It links organization admission, partnerships, two-party service level agreements, ticket assignment, discussions, approved holds, resolution monitoring and reporting. An experimental Random Forest model provides an advisory breach-risk score.
+**Elijah Njugi | Final-year project**
 
-## Run the project on Windows
+ContractorLink is my final-year project on managing service work between companies and contractors. The main idea is to keep the agreement, assigned work and progress records in one place. A company and its contractor can agree on service terms, create tickets under the agreement and follow each ticket through to completion.
 
-## Research dataset in Google Colab
+The application covers organization registration and approval, partnerships, service level agreements (SLAs), ticket assignment, discussions, approved holds, notifications and reports. It also includes a Random Forest model that gives an advisory breach-risk score. I use this score to support ticket review; the SLA deadline and recorded progress remain the basis for tracking the work.
 
-[Open the dataset and model notebook in Google Colab](https://colab.research.google.com/github/ElijahNjugi/ContractorLink/blob/main/notebooks/ContractorLink_Dataset_and_Model.ipynb). Choose **Runtime → Run all** with a free CPU runtime. It downloads the published research CSV, verifies its checksum, explores the data, reproduces the model and exports the results. Use **File → Save a copy in Drive** to keep your own copy. The notebook explains the simulated labels and evaluation limitations.
+## How the project works
 
-## Private snapshot edition
+1. A company or contractor submits an organization application for review.
+2. Approved organizations establish a partnership.
+3. The company prepares an SLA, which the contractor reviews and approves.
+4. Tickets are created under the approved agreement and assigned for action.
+5. Users record progress, discuss the work, request holds where necessary and complete tickets. Reports bring these records together for review.
 
-Elijah can provide a separate **ContractorLink-With-Records.zip** directly to reviewers. Extract it and double-click **Launch ContractorLink.cmd**. On its first launch, this edition imports the supplied database records and uploaded files. Use the existing application email/password provided separately by Elijah; passwords are not reset. Later launches preserve your changes. Each recipient has an independent copy, without synchronization.
+## Running the application
 
-The snapshot is private and excluded from GitHub and public releases. It includes account password hashes and project documents, so share it only with intended recipients. Database server credentials, email/API keys and password-reset tokens are excluded. Existing local installations are never overwritten by a snapshot.
+The launcher is intended to make the project easier to demonstrate on another Windows computer. It installs missing dependencies, prepares the local database and opens the application in a browser.
 
-## Public source edition
+1. Download [ContractorLink-Windows.zip](https://github.com/ElijahNjugi/ContractorLink/releases/tag/v1.0.0) and extract the whole folder.
+2. Double-click **Launch ContractorLink.cmd**. The first setup needs internet access and can take several minutes.
+3. Open `.runtime/First login.txt` for the generated administrator login, then change the initial password when prompted.
+4. Keep the launcher window open while using the application.
+5. Use **Stop ContractorLink.cmd** when finished. Your records remain available the next time you start it.
 
-Download **ContractorLink-Windows.zip** from the repository's **Releases** page, extract the entire folder, and double-click **Launch ContractorLink.cmd**.
+The launcher supports 64-bit Windows 10 and Windows 11. Allow a few GB of free space for the tools and dependencies. Node.js, Python and PostgreSQL do not need to be installed beforehand, and no paid account is needed.
 
-The first launch downloads missing dependencies, creates an isolated PostgreSQL database, builds the frontend and opens the website automatically. Later launches reuse the installed dependencies and saved data. No hosting subscription, Docker installation or paid AI account is required.
+The usual address is `http://127.0.0.1:5173`. If that port is occupied, the launcher selects another one and opens the correct address. The shortcut inside `.runtime` also uses that address. The top-level **Open ContractorLink.url** shortcut only opens the default address after the application has started.
 
-- Supported target: Windows 10/11, x64. First-time setup requires internet and a few GB of disk space.
-- Login: open `.runtime/First login.txt` for the generated administrator credentials. Change the password at first login. The initial password file is not updated after a password change.
-- Keep the launcher window open. Use **Stop ContractorLink.cmd** or Ctrl+C to shut down cleanly.
-- Default address: `http://127.0.0.1:5173`. If occupied, another local port is selected. The browser and `.runtime/Open ContractorLink.url` use the selected address.
-- The top-level **Open ContractorLink.url** shortcut is for the default address after startup; it cannot install dependencies or start a server by itself.
+## Demonstrating the project with existing records
 
-The ZIP contains source code and the supplied model, not the developer's live records or credentials. Every recipient gets a separate local installation. The launcher binds services to the local computer and does not expose a public internet website.
+The public download starts with a separate database and a generated administrator account. For a demonstration with the existing project records, I provide **ContractorLink-With-Records.zip** separately. After extracting it, use the same launcher and sign in with the application login details I provide.
 
-## Local demonstration workflow
+This version imports the supplied accounts, records and uploaded files on the first launch. Later launches keep the recipient's changes. Each copy runs independently, so changes on one computer do not appear on another. An existing local installation is not overwritten by the snapshot.
 
-Sign in as the generated platform administrator. Use the public application form to submit company/contractor applications, then review them through platform administration. Approved participants can establish a partnership, prepare and approve an SLA, and create tickets under it. Organizations and service records are created locally as part of the demonstration.
+The snapshot contains account password hashes and project documents, so I keep it out of the public repository and share it directly with the intended reviewers. It does not include database server passwords, email/API keys or password-reset tokens.
 
-The launcher uses free guided drafting and disables outbound email. Features that depend on email delivery, such as emailed invitations and password-reset links, require SMTP setup in a separately configured development installation. The launcher does not silently reuse any existing `.env` email credentials. Notifications recorded inside the app remain available.
+## Dataset and Google Colab notebook
 
-## What the launcher does
+[Open the ContractorLink notebook in Google Colab](https://colab.research.google.com/github/ElijahNjugi/ContractorLink/blob/main/notebooks/ContractorLink_Dataset_and_Model.ipynb).
 
-1. Uses compatible Node.js or downloads a project-local Node.js 22 runtime from nodejs.org, checking its SHA-256 checksum.
-2. Installs the locked Node dependencies and embedded PostgreSQL binaries.
-3. Downloads a checksum-verified uv utility from Astral, provisions project-local Python 3.12, and installs the pinned packages matching the saved model.
-4. Applies the schema and dated migrations to its own local database, with a migration ledger. Your existing development database and `.env` files are left alone.
-5. Creates an administrator only if one is missing, without resetting an existing password.
-6. Builds React and serves it with the Express API on one local address. It opens the browser after the database health check succeeds.
+The notebook explains the dataset, checks its contents, trains the Random Forest and evaluates the predictions. Select **Runtime → Run all** using a free CPU runtime. To keep an editable copy, select **File → Save a copy in Drive**. Each code cell starts with a short comment explaining its purpose.
 
-Local state, uploads, credentials and logs are kept in `.runtime/`. Preserve this folder to retain your work. Do not publish or distribute it. Use the Stop launcher before backing up or moving an installation. The launcher does not automatically upgrade previously edited database migrations.
+The dataset contains 12,000 records: 6,000 external incident snapshots and 6,000 simulated ContractorLink records. All 1,530 breach labels in the prepared dataset come from the simulated portion. The external labels use the initial incident snapshot rather than the final outcome. I explain these limitations, along with the repeated rows, in the notebook and [dataset notes](ml/data/provenance.md).
 
-## Development
+The model detects many of the labelled breaches but also produces many false alarms. I therefore present it as an experimental feature. The dataset results do not establish its accuracy on real ContractorLink operations.
 
-The application uses React 18/Vite, Node.js/Express, Socket.IO, PostgreSQL and Python/scikit-learn. The `backend` and `frontend` folders retain their independent package manifests.
+## Tools used
 
-For an existing development environment, configure `backend/.env` from its example, install backend/frontend dependencies, and run their `npm run dev` commands. The Vite development proxy forwards API, upload and Socket.IO requests to port 5000. The portable launcher instead supplies its own isolated environment and serves the production frontend build.
+| Part | Tools |
+| --- | --- |
+| User interface | React 18 and Vite |
+| Backend API | Node.js and Express |
+| Database | PostgreSQL |
+| Live updates | Socket.IO |
+| Breach-risk model | Python and scikit-learn |
 
-`PYTHON_EXECUTABLE` overrides the predictor/retraining Python path. `UPLOAD_ROOT` overrides upload storage. `HOST`, `PORT` and `SERVE_FRONTEND=true` control combined serving. Existing development defaults remain available.
+The launcher uses [Node.js](https://nodejs.org/), [uv](https://docs.astral.sh/uv/) and [embedded-postgres](https://github.com/leinelissen/embedded-postgres). These components retain their own licences. The required runtimes are downloaded during setup rather than included in the source ZIP.
 
-Run `npm test` for launcher utility tests. Run `npm run package` to generate a clean distributable in `.distribution/ContractorLink-Windows.zip`; private data, dependency folders, environment files, reports and raw incident data are excluded. The model and prepared training CSV are included for inference and the existing retraining feature.
+## Local setup and limitations
 
-## Evaluation boundaries
+The launcher runs the website on the local computer; it does not publish it online. It uses guided SLA drafting without a paid API key. In-app notifications are available, but email delivery is disabled. Emailed invitations and password-reset links need SMTP configuration in a development installation.
 
-The breach predictor is experimental. Its hybrid training data and simulated positive labels do not establish real-world breach probability or operational effectiveness. See `ml/data/provenance.md` and `ml/models/breach_risk_v1_metrics.json`. The application remains an academic prototype; a local demonstration is not evidence of production security or capacity.
+Local records, uploads and settings are stored in `.runtime/`. Keep this folder to preserve your work, and stop the application before making a backup. Do not share a used runtime folder as a clean project copy because it contains local credentials and records.
 
-## Distribution components
+## Working with the source code
 
-The launcher uses [Node.js](https://nodejs.org/), [uv](https://docs.astral.sh/uv/) and [embedded-postgres](https://github.com/leinelissen/embedded-postgres). They retain their respective licenses. Downloaded runtimes and libraries are installed on first run rather than bundled into the source ZIP. Research documents, signatures, live database records and local credentials are not included in the public source package.
+The `backend` and `frontend` folders each have their own package files. For development, configure `backend/.env` using the example file, install the dependencies in both folders and run `npm run dev` in each. The Vite proxy forwards API, upload and Socket.IO requests to backend port 5000. The launcher instead builds the frontend and serves it with the API at one address.
+
+`PYTHON_EXECUTABLE` sets the Python interpreter used by the model, and `UPLOAD_ROOT` sets the upload location. `HOST`, `PORT` and `SERVE_FRONTEND` control how the backend serves the application.
+
+Run `npm test` to check the launcher utilities. Run `npm run package` to prepare the public ZIP in `.distribution/ContractorLink-Windows.zip`. The package includes the prepared research CSV and saved model, while excluding private records, environment files, installed dependencies and research documents.
+
+For a private handover, `node scripts/export-snapshot.mjs` exports the configured development database, and `scripts/package-snapshot.ps1` prepares the ZIP with those records. This ZIP is for direct sharing with reviewers, not for uploading to the public GitHub release.
